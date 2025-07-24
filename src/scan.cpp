@@ -1,100 +1,71 @@
-#include <cstdio>
+#pragma once
 #include <cctype>
-#include <format>
 #include <string>
+#include <utility>
 #include "data.hpp"
 
 class Scanner {
-	Data data;
+    Data& data;
+    
+public:
+    explicit Scanner(Data& d) : data(d) {}
+    
+    char next() {
+        if (data.putBack) {
+            char c = static_cast<char>(data.putBack);
+            data.putBack = 0;
+            return c;
+        }
+        
+        char c = data.inFile.get();
+        if (c == '\n') {
+            data.line++;
+        }
+        return c;
+    }
 
-	Scanner(Data data) {
-		this.data = data;
-	}	
+    void put_back(char c) {
+        data.putBack = c;
+    }
 
-	Scanner(std::string fileName) {
-		this.data = new Data(fileName);
-	}
+    char skip() {
+        char c;
+        while (true) {
+            c = next();
+            if (data.inFile.eof()) return EOF;
+            if (!std::isspace(static_cast<unsigned char>(c))) break;
+        }
+        return c;
+    }
 
-	int chrpos(std::string s, char c) {
-		return s.find(c)
-	}
+    int scan_int(char c) {
+        int val = 0;
+        do {
+            val = val * 10 + (c - '0');
+            c = next();
+        } while (std::isdigit(static_cast<unsigned char>(c)));
+        
+        put_back(c);
+        return val;
+    }
 
-	char next() {
-		char c;
+    bool scan() {
+        char c = skip();
+        if (c == EOF) return false;
 
-		if (this.data.putBack) {
-			c = this.data.putBack;
-			this.data.putBack = 0;
-			return c;
-		}
-
-		this.data.inFile.open(this.data.fileName);
-		c = getc(this.data.inFile);
-		if ('\n' == c) {
-			this.data.line++;
-		}
-		this.data.inFile.close();
-		return c;
-	}
-
-	void put_back(char c) {
-		this.data.putBack = c;
-	}
-
-	char skip() {
-		char c;
-
-		c = this.next();
-		while (' ' == c || '\t' == c || '\n' == c || '\r' == c || '\f' == c) {
-			c = this.next();
-		}
-		
-		return c;
-	}
-
-	int scan_int(char c) {
-		int k;
-		int val = 0;
-
-		while ((k = this.chrpos("0123456789", c)) >= 0) {
-			val = val * 10 + k;
-			c = this.next();
-		}
-
-		this.put_back(c);
-		return val;
-	}
-
-	int scan(struct Token t) {
-		char c;
-
-		c = skip();
-
-		switch (c) {
-			case EOF:
-				return 0;
-			case '+':
-				this.data.token.tokenType = Plus;
-				break;
-			case '-':
-				this.data.token.tokenType = Minus;
-				break;
-			case '*':
-				this.data.token.tokenType = Star;
-				break;
-			case '/':
-				this.data.token.tokenType = Slash;
-				break;
-			default:
-				if (std::isdigit(c)){
-					this.data.token.intValue = scan_int(c);
-					this.data.token.tokenType = IntLit;
-					break;
-				}
-				
-				throw std::format("Unrecongnised character {} on line {}\n", c, this.data.line);
-		}
-
-		return 1;
-	}
-}
+        switch (c) {
+            case '+': data.token.type = TokenType::Plus; break;
+            case '-': data.token.type = TokenType::Minus; break;
+            case '*': data.token.type = TokenType::Star; break;
+            case '/': data.token.type = TokenType::Slash; break;
+            default:
+                if (std::isdigit(static_cast<unsigned char>(c))) {
+                    data.token.intValue = scan_int(c);
+                    data.token.type = TokenType::IntLit;
+                } else {
+                    throw std::runtime_error("Unrecognized character on line " + std::to_string(data.line));
+                }
+        }
+        return true;
+    }
+};
