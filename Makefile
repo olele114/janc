@@ -5,4 +5,5 @@ OBJS = $(wildcard ./src/*.cpp ./src/*.hpp)
 TARGET = janc.out
 
 janc: 
-	$(CXX) $(CXXFLAGS) $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS)
+	mv a.out janc
