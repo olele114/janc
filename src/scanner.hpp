@@ -10,47 +10,59 @@ class Scanner {
 public:
     explicit Scanner(Data& d) : data(d) {}
     
-    char next() {
+    // 添加公有接口获取当前token
+    Token getToken() const { return data.token; }
+    
+    // 添加公有接口获取行号
+    int getLine() const { return data.line; }
+    
+    // 添加公有初始化方法
+    void init() {
+        data.line = 1;
+        data.putBack = '\n';
+    }
+
+    int next() {  // 返回类型改为int以处理EOF
         if (data.putBack) {
-            char c = static_cast<char>(data.putBack);
+            int c = data.putBack;
             data.putBack = 0;
             return c;
         }
         
-        char c = data.inFile.get();
+        int c = data.inFile.get();  // 使用int存储字符，以正确处理EOF(-1)
         if (c == '\n') {
             data.line++;
         }
         return c;
     }
 
-    void put_back(char c) {
+    void put_back(int c) {  // 参数类型改为int
         data.putBack = c;
     }
 
-    char skip() {
-        char c;
+    int skip() {  // 返回类型改为int
+        int c;
         while (true) {
             c = next();
-            if (data.inFile.eof()) return EOF;
-            if (!std::isspace(static_cast<unsigned char>(c))) break;
+            if (c == EOF) return EOF;  // 现在类型匹配了
+            if (!std::isspace(c)) break;
         }
         return c;
     }
 
-    int scan_int(char c) {
+    int scan_int(int c) {  // 参数类型改为int
         int val = 0;
         do {
             val = val * 10 + (c - '0');
             c = next();
-        } while (std::isdigit(static_cast<unsigned char>(c)));
+        } while (std::isdigit(c));
         
         put_back(c);
         return val;
     }
 
     bool scan() {
-        char c = skip();
+        int c = skip();  // 使用int存储字符
         if (c == EOF) return false;
 
         switch (c) {
@@ -59,7 +71,7 @@ public:
             case '*': data.token.type = TokenType::Star; break;
             case '/': data.token.type = TokenType::Slash; break;
             default:
-                if (std::isdigit(static_cast<unsigned char>(c))) {
+                if (std::isdigit(c)) {
                     data.token.intValue = scan_int(c);
                     data.token.type = TokenType::IntLit;
                 } else {
