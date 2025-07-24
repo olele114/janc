@@ -6,11 +6,6 @@
 
 using namespace std;
 
-static void init(Scanner& s) {
-    s.data.line = 1;
-    s.data.putBack = '\n';
-}
-
 static void usage(const string& prog) {
     cerr << "Usage: " << prog << " infile\n";
     exit(1);
@@ -20,10 +15,11 @@ vector<string> tokStr = {"Plus", "Minus", "Star", "Slash", "IntLit"};
 
 static void scan_file(Scanner& s) {
     while (s.scan()) {
-        cout << "Token " << tokStr[static_cast<int>(s.data.token.type)];
+        Token token = s.getToken();
+        cout << "Token " << tokStr[static_cast<int>(token.type)];
         
-        if (s.data.token.type == TokenType::IntLit) {
-            cout << ", value " << s.data.token.intValue;
+        if (token.type == TokenType::IntLit) {
+            cout << ", value " << token.intValue;
         }
         cout << endl;
     }
@@ -38,7 +34,8 @@ int main(int argc, char* argv[]) {
         Data d(argv[1]);
         Scanner s(d);
 
-        init(s);
+        s.init();
+
         scan_file(s);
         
         return 0;
