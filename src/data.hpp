@@ -1,28 +1,37 @@
+#pragma once
 #include <fstream>
 #include <string>
 
 enum class TokenType {
-	Plus,
-	Minus,
-	Star,
-	Slash,
-	IntLit,
-}
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    IntLit
+};
 
 struct Token {
-	TokenType type;
-	int intValue;
-}
+    TokenType type;
+    int intValue = 0;
+};
 
-static class Data {
-	public:
-	int line;
-	int putBack;
-	std::ifstream inFile;
-	std::string fileName;
-	Token token;
+class Data {
+public:
+    int line = 1;
+    int putBack = 0;
+    std::ifstream inFile;
+    Token token;
 
-	Data(std::string fileName) {
-		this.fileName = fileName;
-	}
-}
+    explicit Data(const std::string& fileName) {
+        inFile.open(fileName);
+        if (!inFile.is_open()) {
+            throw std::runtime_error("Unable to open file: " + fileName);
+        }
+    }
+    
+    ~Data() {
+        if (inFile.is_open()) {
+            inFile.close();
+        }
+    }
+};
