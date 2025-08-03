@@ -123,7 +123,7 @@ impl <R: Read> Lexer<R> {
             _ if c.is_ascii_digit() => Ok(Token::IntLit(self.scan_int(c))),
             
             // Syntax error handling
-            _ => Err(format!("Unrecognised character '{}' on line {}", c, self.pine)),
+            _ => Err(format!("Unrecognised character '{}' on line {}", c, self.line)),
         };
 
         Some(token)
